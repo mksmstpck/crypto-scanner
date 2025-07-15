@@ -1,6 +1,6 @@
 use std::{error::Error, time::Duration};
 
-use crate::events::{models};
+use crate::{dto, models};
 
 pub struct Mexc {
     client: reqwest::Client,
@@ -13,7 +13,7 @@ impl Mexc {
         Mexc { client }
     }
 
-    pub async fn get_ticker(self) -> Result<Response, Box<dyn Error>> {
+    pub async fn get_ticker(self) -> Result<Vec<dto::Coin>, Box<dyn Error>> {
         let body = self
             .client
             .get("https://api.mexc.com/api/v3/ticker/24hr")
@@ -27,21 +27,24 @@ impl Mexc {
 
         let res: Response = serde_json::from_str(&body)?;
 
-        Ok(res)
+        models::into_cex_response_dto(res)
     }
 
-    pub async fn get_ticker_coin(self, symbol:&str) -> Result<models::Coin, Box<dyn Error>> {
-        let body = self.
-        client
-        .get(format!("{}{}", "https://api.mexc.com/api/v3/ticker/24hr?symbol=", symbol))
-        .timeout(Duration::from_secs(3))
-        .send()
-        .await?
-        .text()
-        .await?;
+    pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
+        let body = self
+            .client
+            .get(format!(
+                "{}{}",
+                "https://api.mexc.com/api/v3/ticker/24hr?symbol=", symbol
+            ))
+            .timeout(Duration::from_secs(3))
+            .send()
+            .await?
+            .text()
+            .await?;
 
         let res: models::Coin = serde_json::from_str(&body)?;
 
-        Ok(res)
+        res.into_coin_dto()
     }
 }

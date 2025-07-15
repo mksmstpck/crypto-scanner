@@ -1,7 +1,4 @@
-use crypto_scanner::{
-    events::{cex},
-    services,
-};
+use crypto_scanner::{events::cex, services};
 
 #[tokio::main]
 async fn main() {
@@ -9,5 +6,5 @@ async fn main() {
 
     let cex = cex::Cex::new(client);
 
-    services::Services::new(cex).get_ticker_mexc().await;
+    //services::Services::new(cex).get_ticker_mexc().await;
 }

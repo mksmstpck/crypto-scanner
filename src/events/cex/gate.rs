@@ -1,23 +1,31 @@
 use std::{error::Error, time::Duration};
 
-use crate::events::{models};
+use crate::models;
+
+use crate::dto;
 
 pub struct Gate {
     client: reqwest::Client,
 }
 
-type Response = Vec<models::Coin>;
+#[derive(serde::Deserialize)]
+struct Coin {
+    currency_pair: String,
+    last: String,
+    quote_volume: String,
+}
 
 impl Gate {
     pub fn new(client: reqwest::Client) -> Gate {
         Gate { client }
     }
 
-    pub async fn get_ticker(self) -> Result<Response, Box<dyn Error>> {
+    pub async fn get_ticker(self) -> Result<Vec<dto::Coin>, Box<dyn Error>> {
         let body = self
             .client
-            .get("https://api.gate.io/api/v4/spot/tickers")
-            .timeout(Duration::from_secs(3))
+            .get("https://api.gateio.ws/api/v4/spot/tickers")
+            .header("User-Agent", "Mozilla/5.0 ArbitrageBot")
+            .timeout(Duration::from_secs(10))
             .send()
             .await?
             .text()
@@ -25,23 +33,43 @@ impl Gate {
 
         println!("{:#?}", body);
 
-        let res: Response = serde_json::from_str(&body)?;
+        let res: Vec<Coin> = serde_json::from_str(&body)?;
 
-        Ok(res)
+        let mut res_models = vec![models::Coin {
+            symbol: String::from(""),
+            last_price: String::from(""),
+            quote_volume: String::from(""),
+        }];
+
+        for i in res {
+            res_models.push(
+                models::Coin{
+                    symbol: i.currency_pair,
+                    last_price: i.last,
+                    quote_volume: i.quote_volume,
+                }
+            );
+        }
+
+        models::into_cex_response_dto(res_models)
     }
 
-    pub async fn get_ticker_coin(self, symbol:&str) -> Result<models::Coin, Box<dyn Error>> {
-        let body = self.
-        client
-        .get(format!("{}{}", "https://api.gate.io/api/v4/spot/tickers?currency_pair=", symbol))
-        .timeout(Duration::from_secs(3))
-        .send()
-        .await?
-        .text()
-        .await?;
+    pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
+        let body = self
+            .client
+            .get(format!(
+                "{}{}",
+                "https://api.gateio.ws/api/v4/spot/tickers?currency_pair=", symbol
+            ))
+            .header("User-Agent", "Mozilla/5.0 ArbitrageBot")
+            .timeout(Duration::from_secs(3))
+            .send()
+            .await?
+            .text()
+            .await?;
 
         let res: models::Coin = serde_json::from_str(&body)?;
 
-        Ok(res)
+        res.into_coin_dto()
     }
 }

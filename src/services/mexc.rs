@@ -1,4 +1,4 @@
-use crate::events::{models};
+/* use crate::models;
 use crate::services::Services;
 
 impl Services {
@@ -24,3 +24,4 @@ impl Services {
         println!("{:#?}", filtered_coins);
     }
 }
+*/
