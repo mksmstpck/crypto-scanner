@@ -150,7 +150,9 @@ pub fn seek_pairs(filtered: &Vec<Filtered>) -> Result<Vec<Pair>, cex::CexError> 
                 spread_percents: spread,
             };
 
-            pairs.push(pair);
+            if spread > 1.5 {
+                pairs.push(pair);
+            }
         }
     }
 
