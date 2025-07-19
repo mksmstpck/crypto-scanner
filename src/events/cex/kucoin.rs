@@ -61,22 +61,4 @@ impl cex::CexApi for Kucoin {
 
         models::into_cex_response_dto(res_models)
     }
-
-    /*pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
-        let body = self
-            .client
-            .get(format!(
-                "{}{}",
-                "https://api.kucoin.com/api/v1/market/stats?symbol=", symbol
-            ))
-            .timeout(Duration::from_secs(3))
-            .send()
-            .await?
-            .text()
-            .await?;
-
-        let res: models::Coin = serde_json::from_str(&body)?;
-
-        res.into_coin_dto()
-    }*/
 }
