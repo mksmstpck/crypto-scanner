@@ -1,19 +1,18 @@
-use std::{error::Error, time::Duration};
+use std::time::Duration;
 
 use crate::{dto, models};
 
+use crate::events::cex;
+
 pub struct Mexc {
-    client: reqwest::Client,
+    pub client: reqwest::Client,
 }
 
 type Response = Vec<models::Coin>;
 
-impl Mexc {
-    pub fn new(client: reqwest::Client) -> Mexc {
-        Mexc { client }
-    }
-
-    pub async fn get_ticker(self) -> Result<Vec<dto::Coin>, Box<dyn Error>> {
+#[async_trait::async_trait]
+impl cex::CexApi for Mexc {
+    async fn get_ticker(&self) -> Result<Vec<dto::Coin>, cex::CexError> {
         let body = self
             .client
             .get("https://api.mexc.com/api/v3/ticker/24hr")
@@ -23,14 +22,12 @@ impl Mexc {
             .text()
             .await?;
 
-        println!("{:#?}", body);
-
         let res: Response = serde_json::from_str(&body)?;
 
         models::into_cex_response_dto(res)
     }
 
-    pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
+    /*pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
         let body = self
             .client
             .get(format!(
@@ -46,5 +43,5 @@ impl Mexc {
         let res: models::Coin = serde_json::from_str(&body)?;
 
         res.into_coin_dto()
-    }
+    }*/
 }

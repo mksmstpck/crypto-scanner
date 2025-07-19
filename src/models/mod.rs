@@ -1,4 +1,4 @@
-use crate::dto;
+use crate::{dto, events::cex};
 use serde::Deserialize;
 use std::error::Error;
 
@@ -29,7 +29,7 @@ impl Coin {
     }
 }
 
-pub fn into_cex_response_dto(res: Vec<Coin>) -> Result<dto::CexResponse, Box<dyn Error>> {
+pub fn into_cex_response_dto(res: Vec<Coin>) -> Result<dto::CexResponse, cex::CexError> {
     let mut res_dto = vec![dto::Coin {
         symbol: String::from(""),
         last_price: 0.0,

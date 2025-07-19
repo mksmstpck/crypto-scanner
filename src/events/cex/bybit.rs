@@ -1,13 +1,14 @@
-use std::{error::Error, time::Duration};
+use std::time::Duration;
 
 use serde::Deserialize;
 
+use crate::events::cex;
 use crate::models::{self};
 
 use crate::dto;
 
 pub struct Bybit {
-    client: reqwest::Client,
+    pub client: reqwest::Client,
 }
 
 #[derive(serde::Deserialize)]
@@ -28,12 +29,9 @@ pub struct Coin {
     pub turnover24h: String,
 }
 
-impl Bybit {
-    pub fn new(client: reqwest::Client) -> Bybit {
-        Bybit { client }
-    }
-
-    pub async fn get_ticker(self) -> Result<Vec<dto::Coin>, Box<dyn Error>> {
+#[async_trait::async_trait]
+impl cex::CexApi for Bybit {
+    async fn get_ticker(&self) -> Result<Vec<dto::Coin>, cex::CexError> {
         let body = self
             .client
             .get("https://api.bybit.com/v5/market/tickers?category=spot")
@@ -42,8 +40,6 @@ impl Bybit {
             .await?
             .text()
             .await?;
-
-        println!("{:#?}", body);
 
         let res: Response = serde_json::from_str(&body)?;
 
@@ -64,7 +60,7 @@ impl Bybit {
         models::into_cex_response_dto(res_models)
     }
 
-    pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
+    /*pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
         let body = self
             .client
             .get(format!(
@@ -80,5 +76,5 @@ impl Bybit {
         let res: models::Coin = serde_json::from_str(&body)?;
 
         res.into_coin_dto()
-    }
+    }*/
 }

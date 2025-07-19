@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Coin {
     pub symbol: String,
     pub last_price: f64,

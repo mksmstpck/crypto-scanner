@@ -1,13 +1,14 @@
-use std::{error::Error, time::Duration};
 use serde::Deserialize;
+use std::time::Duration;
 
 use crate::{
     dto,
+    events::cex,
     models::{self},
 };
 
 pub struct Kucoin {
-    client: reqwest::Client,
+    pub client: reqwest::Client,
 }
 
 #[derive(Deserialize, Debug)]
@@ -15,14 +16,14 @@ pub struct Kucoin {
 struct Coin {
     symbol: String,
     vol_value: String,
-    last: String
+    last: String,
 }
 
 type Ticker = Vec<Coin>;
 
 #[derive(serde::Deserialize)]
 struct Data {
-    ticker: Ticker
+    ticker: Ticker,
 }
 
 #[derive(serde::Deserialize)]
@@ -30,12 +31,9 @@ struct Response {
     data: Data,
 }
 
-impl Kucoin {
-    pub fn new(client: reqwest::Client) -> Kucoin {
-        Kucoin { client }
-    }
-
-    pub async fn get_ticker(self) -> Result<Vec<dto::Coin>, Box<dyn Error>> {
+#[async_trait::async_trait]
+impl cex::CexApi for Kucoin {
+    async fn get_ticker(&self) -> Result<Vec<dto::Coin>, cex::CexError> {
         let body = self
             .client
             .get("https://api.kucoin.com/api/v1/market/allTickers")
@@ -44,8 +42,6 @@ impl Kucoin {
             .await?
             .text()
             .await?;
-
-        println!("{:#?}", body);
 
         let res: Response = serde_json::from_str(&body)?;
 
@@ -66,7 +62,7 @@ impl Kucoin {
         models::into_cex_response_dto(res_models)
     }
 
-    pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
+    /*pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
         let body = self
             .client
             .get(format!(
@@ -82,5 +78,5 @@ impl Kucoin {
         let res: models::Coin = serde_json::from_str(&body)?;
 
         res.into_coin_dto()
-    }
+    }*/
 }

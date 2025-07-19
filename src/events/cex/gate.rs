@@ -1,11 +1,11 @@
-use std::{error::Error, time::Duration};
-
-use crate::models;
+use std::time::Duration;
 
 use crate::dto;
+use crate::events::cex;
+use crate::models;
 
 pub struct Gate {
-    client: reqwest::Client,
+    pub client: reqwest::Client,
 }
 
 #[derive(serde::Deserialize)]
@@ -15,12 +15,9 @@ struct Coin {
     quote_volume: String,
 }
 
-impl Gate {
-    pub fn new(client: reqwest::Client) -> Gate {
-        Gate { client }
-    }
-
-    pub async fn get_ticker(self) -> Result<Vec<dto::Coin>, Box<dyn Error>> {
+#[async_trait::async_trait]
+impl cex::CexApi for Gate {
+    async fn get_ticker(&self) -> Result<Vec<dto::Coin>, cex::CexError> {
         let body = self
             .client
             .get("https://api.gateio.ws/api/v4/spot/tickers")
@@ -31,8 +28,6 @@ impl Gate {
             .text()
             .await?;
 
-        println!("{:#?}", body);
-
         let res: Vec<Coin> = serde_json::from_str(&body)?;
 
         let mut res_models = vec![models::Coin {
@@ -42,19 +37,17 @@ impl Gate {
         }];
 
         for i in res {
-            res_models.push(
-                models::Coin{
-                    symbol: i.currency_pair,
-                    last_price: i.last,
-                    quote_volume: i.quote_volume,
-                }
-            );
+            res_models.push(models::Coin {
+                symbol: i.currency_pair,
+                last_price: i.last,
+                quote_volume: i.quote_volume,
+            });
         }
 
         models::into_cex_response_dto(res_models)
     }
 
-    pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
+    /*pub async fn get_ticker_coin(self, symbol: &str) -> Result<dto::Coin, Box<dyn Error>> {
         let body = self
             .client
             .get(format!(
@@ -71,5 +64,5 @@ impl Gate {
         let res: models::Coin = serde_json::from_str(&body)?;
 
         res.into_coin_dto()
-    }
+    }*/
 }
