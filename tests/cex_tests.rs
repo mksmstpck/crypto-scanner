@@ -1,4 +1,4 @@
-use crypto_scanner::events::cex::{binance, bybit, gate, kucoin, mexc};
+use crypto_scanner::cex::{binance, bybit, gate, kucoin, mexc};
 
 #[tokio::test]
 async fn test_ticker_binance() {

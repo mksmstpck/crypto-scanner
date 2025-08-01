@@ -1,7 +1,9 @@
-use crate::events::cex;
+use log::error;
+
+use crate::cex;
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::{vec};
+use std::vec;
 
 pub struct Services {
     pub cex: Arc<cex::Cex>,
@@ -54,13 +56,13 @@ pub struct Filtered {
 
 pub struct ExchangeClient {
     pub exchange: Exchange,
-    pub client: Arc<dyn cex::CexApi>,
+    pub client: Arc<dyn cex::Api>,
 }
 
 pub async fn scan_all_exchanges() -> Result<Vec<Filtered>, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
 
-    let exchanges: Vec<(Exchange, Arc<dyn cex::CexApi>)> = vec![
+    let exchanges: Vec<(Exchange, Arc<dyn cex::Api>)> = vec![
         (
             Exchange::Binance,
             Arc::new(cex::binance::Binance {
@@ -106,7 +108,7 @@ pub async fn scan_all_exchanges() -> Result<Vec<Filtered>, Box<dyn std::error::E
                 }
             }
             Err(e) => {
-                eprintln!("Error from {}: {}", exchange_enum, e);
+                error!("Error from {}: {}", exchange_enum, e);
             }
         }
     }
@@ -122,19 +124,27 @@ pub async fn scan_all_exchanges() -> Result<Vec<Filtered>, Box<dyn std::error::E
 
 #[derive(Clone, Debug)]
 pub struct Pair {
-    pub price1: Price,
-    pub price2: Price,
+    pub price_high: Price,
+    pub price_low: Price,
     pub coin: String,
     pub spread_percents: f64,
 }
 
 // returns coins with more than 1.5% spread
-pub fn seek_pairs(filtered: &Vec<Filtered>) -> Result<Vec<Pair>, cex::CexError> {
+pub fn seek_pairs(filtered: &Vec<Filtered>) -> Result<Vec<Pair>, cex::Error> {
     let mut pairs = vec![];
 
     for i in filtered {
-        let max_price = i.prices.iter().cloned().max_by(|a, b| a.price.partial_cmp(&b.price).unwrap());
-        let min_price = i.prices.iter().cloned().min_by(|a, b| a.price.partial_cmp(&b.price).unwrap());
+        let max_price = i
+            .prices
+            .iter()
+            .cloned()
+            .max_by(|a, b| a.price.partial_cmp(&b.price).unwrap());
+        let min_price = i
+            .prices
+            .iter()
+            .cloned()
+            .min_by(|a, b| a.price.partial_cmp(&b.price).unwrap());
 
         if let (Some(max), Some(min)) = (max_price, min_price) {
             if min.price == 0.0 {
@@ -144,8 +154,8 @@ pub fn seek_pairs(filtered: &Vec<Filtered>) -> Result<Vec<Pair>, cex::CexError> 
             let spread = ((max.price - min.price) / min.price) * 100.0;
 
             let pair = Pair {
-                price1: max,
-                price2: min,
+                price_high: max,
+                price_low: min,
                 coin: i.coin.clone(),
                 spread_percents: spread,
             };

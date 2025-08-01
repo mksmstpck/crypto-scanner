@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use reqwest::{self};
 
-use crate::dto;
+use crate::cex;
 
 pub mod binance;
 pub mod bybit;
@@ -19,37 +19,44 @@ pub struct Cex {
 }
 
 #[async_trait::async_trait]
-pub trait CexApi {
-    async fn get_ticker(&self) -> Result<Vec<dto::Coin>, CexError>;
+pub trait Api {
+    async fn get_ticker(&self) -> Result<Vec<cex::Coin>, Error>;
 }
 
 #[derive(Debug)]
-pub enum CexError {
+pub enum Error {
     Http(reqwest::Error),
     Json(serde_json::Error),
     Other(String),
 }
 
-impl std::fmt::Display for CexError {
+impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CexError::Http(e) => write!(f, "HTTP error: {}", e),
-            CexError::Json(e) => write!(f, "JSON error: {}", e),
-            CexError::Other(e) => write!(f, "Other error: {}", e),
+            Error::Http(e) => write!(f, "HTTP error: {}", e),
+            Error::Json(e) => write!(f, "JSON error: {}", e),
+            Error::Other(e) => write!(f, "Other error: {}", e),
         }
     }
 }
 
-impl std::error::Error for CexError {}
+impl std::error::Error for Error {}
 
-impl From<reqwest::Error> for CexError {
+impl From<reqwest::Error> for Error {
     fn from(e: reqwest::Error) -> Self {
-        CexError::Http(e)
+        Error::Http(e)
     }
 }
 
-impl From<serde_json::Error> for CexError {
+impl From<serde_json::Error> for Error {
     fn from(e: serde_json::Error) -> Self {
-        CexError::Json(e)
+        Error::Json(e)
     }
+}
+
+#[derive(Clone, Debug)]
+pub struct Coin {
+    pub symbol: String,
+    pub last_price: f64,
+    pub quote_volume: f64,
 }
