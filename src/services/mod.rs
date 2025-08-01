@@ -30,18 +30,6 @@ impl std::fmt::Display for Exchange {
     }
 }
 
-impl Exchange {
-    pub fn name(&self) -> &'static str {
-        match self {
-            Exchange::Binance => "Binance",
-            Exchange::Bybit => "Bybit",
-            Exchange::Gate => "Gate",
-            Exchange::Kucoin => "Kucoin",
-            Exchange::Mexc => "Mexc",
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct Price {
     pub exchange: Exchange,
