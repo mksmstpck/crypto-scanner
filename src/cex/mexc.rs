@@ -42,7 +42,7 @@ impl cex::Api for Mexc {
                     Err(err) => {
                         error!("Unable to parse f64 from string: {err}");
                         0.0;
-                        return Err(cex::Error::Other(err.to_string()));
+                        return Err(cex::Error::Other(Box::new(err)));
                     }
                 },
                 quote_volume: match i.quote_volume.parse::<f64>() {
@@ -50,7 +50,7 @@ impl cex::Api for Mexc {
                     Err(err) => {
                         error!("Unable to parse f64 from string: {err}");
                         0.0;
-                        return Err(cex::Error::Other(err.to_string()));
+                        return Err(cex::Error::Other(Box::new(err)));
                     }
                 },
             });

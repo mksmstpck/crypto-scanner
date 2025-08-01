@@ -4,6 +4,8 @@ use reqwest::{self};
 
 use crate::cex;
 
+use std::error::Error as StdError;
+
 pub mod binance;
 pub mod bybit;
 pub mod gate;
@@ -27,7 +29,7 @@ pub trait Api {
 pub enum Error {
     Http(reqwest::Error),
     Json(serde_json::Error),
-    Other(String),
+    Other(Box<dyn StdError + Send + Sync>),
 }
 
 impl std::fmt::Display for Error {
@@ -51,6 +53,12 @@ impl From<reqwest::Error> for Error {
 impl From<serde_json::Error> for Error {
     fn from(e: serde_json::Error) -> Self {
         Error::Json(e)
+    }
+}
+
+impl From<Box<dyn StdError + Send + Sync>> for Error {
+    fn from(err: Box<dyn StdError + Send + Sync>) -> Self {
+        Error::Other(err)
     }
 }
 

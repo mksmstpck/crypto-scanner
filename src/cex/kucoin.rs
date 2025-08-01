@@ -51,7 +51,7 @@ impl cex::Api for Kucoin {
                     Err(err) => {
                         error!("Unable to parse f64 from string: {err}");
                         0.0;
-                        return Err(cex::Error::Other(err.to_string()));
+                        return Err(cex::Error::Other(Box::new(err)));
                     }
                 },
                 quote_volume: match i
@@ -65,7 +65,7 @@ impl cex::Api for Kucoin {
                     Err(err) => {
                         error!("Unable to parse f64 from string: {err}");
                         0.0;
-                        return Err(cex::Error::Other(err.to_string()));
+                        return Err(cex::Error::Other(Box::new(err)));
                     }
                 },
             });
