@@ -1,5 +1,3 @@
-use log::error;
-
 use crate::cex;
 use std::collections::HashMap;
 use std::sync::Arc;
