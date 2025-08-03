@@ -50,7 +50,7 @@ pub struct ExchangeClient {
 pub async fn scan_all_exchanges() -> Result<Vec<Filtered>, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
 
-    let exchanges: Vec<(Exchange, Arc<dyn cex::Api>)> = vec![
+    let exchanges_apis: Vec<(Exchange, Arc<dyn cex::Api>)> = vec![
         (
             Exchange::Binance,
             Arc::new(cex::binance::Binance {
@@ -85,8 +85,15 @@ pub async fn scan_all_exchanges() -> Result<Vec<Filtered>, Box<dyn std::error::E
 
     let mut grouped: HashMap<String, Vec<Price>> = HashMap::new();
 
-    for (exchange_enum, exchange_api) in exchanges {
-        match exchange_api.get_ticker().await {
+    let futures: Vec<_> = exchanges_apis.into_iter().map(|(exchange_enum, exchange_api)| {
+        async move {
+            let result = exchange_api.get_ticker().await;
+            (exchange_enum, result)
+        }
+    }).collect();
+
+    for (exchange_enum, result) in futures::future::join_all(futures).await {
+        match result {
             Ok(coins) => {
                 for coin in coins {
                     grouped.entry(coin.symbol.clone()).or_default().push(Price {
@@ -96,14 +103,14 @@ pub async fn scan_all_exchanges() -> Result<Vec<Filtered>, Box<dyn std::error::E
                 }
             }
             Err(e) => {
-                error!("Error from {}: {}", exchange_enum, e);
+                eprintln!("Error from {}: {}", exchange_enum, e);
             }
         }
     }
 
     let filtered: Vec<Filtered> = grouped
         .into_iter()
-        .filter(|(_, prices)| prices.len() > 1) // Only show coins with >1 price to compare
+        .filter(|(_, prices)| prices.len() > 1)
         .map(|(coin, prices)| Filtered { coin, prices })
         .collect();
 
