@@ -2,6 +2,7 @@ use crate::cex;
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::vec;
+use crate::config;
 
 pub struct Services {
     pub cex: Arc<cex::Cex>,
@@ -45,7 +46,7 @@ pub struct ExchangeClient {
     pub client: Arc<dyn cex::Api>,
 }
 
-pub async fn scan_all_exchanges() -> Result<Vec<Filtered>, Box<dyn std::error::Error>> {
+pub async fn scan_all_exchanges(config: Arc<config::Config>) -> Result<Vec<Filtered>, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
 
     let exchanges_apis: Vec<(Exchange, Arc<dyn cex::Api>)> = vec![
@@ -53,30 +54,35 @@ pub async fn scan_all_exchanges() -> Result<Vec<Filtered>, Box<dyn std::error::E
             Exchange::Binance,
             Arc::new(cex::binance::Binance {
                 client: client.clone(),
+                config: config.clone(),
             }),
         ),
         (
             Exchange::Bybit,
             Arc::new(cex::bybit::Bybit {
                 client: client.clone(),
+                config: config.clone(),
             }),
         ),
         (
             Exchange::Gate,
             Arc::new(cex::gate::Gate {
                 client: client.clone(),
+                config: config.clone(),
             }),
         ),
         (
             Exchange::Kucoin,
             Arc::new(cex::kucoin::Kucoin {
                 client: client.clone(),
+                config: config.clone(),
             }),
         ),
         (
             Exchange::Mexc,
             Arc::new(cex::mexc::Mexc {
                 client: client.clone(),
+                config: config.clone(),
             }),
         ),
     ];

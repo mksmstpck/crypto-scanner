@@ -1,25 +1,25 @@
-use core::str;
-
 use log::{error, info};
 use teloxide::{self, prelude::{Requester, RequesterExt}};
+use std::sync::Arc;
+use crate::config;
 
 pub struct Handlers {
     bot: teloxide::prelude::AutoSend<teloxide::prelude::Bot>,
-    chat_id: String,
+    config: Arc<config::Config>,
 }
 
 impl Handlers {
-    pub fn new(token: &str, chat_id: String) -> Handlers {
-        let bot = teloxide::prelude::Bot::new(token).auto_send();
+    pub fn new(config: Arc<config::Config>) -> Handlers {
+        let bot = teloxide::prelude::Bot::new(&config.token).auto_send();
 
         Handlers {
             bot,
-            chat_id,
+            config: config.clone(),
         }
     }
 
     pub async fn send_shit (self) {
-        let m = self.bot.send_message(self.chat_id, "shit").await;
+        let m = self.bot.send_message(self.config.chat_id.to_string(), "shit").await;
 
         match m {
             Ok(val) => info!("{:?}", &val),

@@ -4,10 +4,12 @@ use log::error;
 
 use serde::Deserialize;
 
-use crate::cex;
+use crate::{cex, config};
+use std::sync::Arc;
 
 pub struct Mexc {
     pub client: reqwest::Client,
+    pub config: Arc<config::Config>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -23,7 +25,7 @@ impl cex::Api for Mexc {
     async fn get_ticker(&self) -> Result<Vec<cex::Coin>, cex::Error> {
         let body = self
             .client
-            .get("https://api.mexc.com/api/v3/ticker/24hr")
+            .get(&self.config.mexc_url)
             .timeout(Duration::from_secs(3))
             .send()
             .await?

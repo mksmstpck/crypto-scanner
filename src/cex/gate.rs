@@ -1,10 +1,12 @@
 use std::time::Duration;
 
-use crate::cex;
+use crate::{cex, config};
 use log::error;
+use std::sync::Arc;
 
 pub struct Gate {
     pub client: reqwest::Client,
+    pub config: Arc<config::Config>,
 }
 
 #[derive(serde::Deserialize)]
@@ -19,7 +21,7 @@ impl cex::Api for Gate {
     async fn get_ticker(&self) -> Result<Vec<cex::Coin>, cex::Error> {
         let body = self
             .client
-            .get("https://api.gateio.ws/api/v4/spot/tickers")
+            .get(&self.config.gate_url)
             .header("User-Agent", "Mozilla/5.0 ArbitrageBot")
             .timeout(Duration::from_secs(10))
             .send()

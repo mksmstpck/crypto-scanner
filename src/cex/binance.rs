@@ -2,9 +2,12 @@ use crate::cex;
 use log::error;
 use serde::Deserialize;
 use std::time::Duration;
+use crate::config;
+use std::sync::Arc;
 
 pub struct Binance {
     pub client: reqwest::Client,
+    pub config: Arc<config::Config>
 }
 
 #[derive(Deserialize, Debug)]
@@ -20,7 +23,7 @@ impl cex::Api for Binance {
     async fn get_ticker(&self) -> Result<Vec<cex::Coin>, cex::Error> {
         let body = self
             .client
-            .get("https://api.binance.com/api/v3/ticker/24hr")
+            .get(&self.config.binance_url)
             .timeout(Duration::from_secs(3))
             .send()
             .await?
@@ -38,7 +41,6 @@ impl cex::Api for Binance {
                     Ok(val) => val,
                     Err(err) => {
                         error!("Unable to parse f64 from string: {err}");
-                        0.0;
                         return Err(cex::Error::Other(Box::new(err)));
                     }
                 },
@@ -46,7 +48,6 @@ impl cex::Api for Binance {
                     Ok(val) => val,
                     Err(err) => {
                         error!("Unable to parse f64 from string: {err}");
-                        0.0;
                         return Err(cex::Error::Other(Box::new(err)));
                     }
                 },

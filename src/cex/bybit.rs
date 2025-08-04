@@ -2,11 +2,13 @@ use std::time::Duration;
 
 use serde::Deserialize;
 
-use crate::cex;
+use crate::{cex, config};
 use log::error;
+use std::sync::Arc;
 
 pub struct Bybit {
     pub client: reqwest::Client,
+    pub config: Arc<config::Config>,
 }
 
 #[derive(serde::Deserialize)]
@@ -32,7 +34,7 @@ impl cex::Api for Bybit {
     async fn get_ticker(&self) -> Result<Vec<cex::Coin>, cex::Error> {
         let body = self
             .client
-            .get("https://api.bybit.com/v5/market/tickers?category=spot")
+            .get(&self.config.bybit_url)
             .timeout(Duration::from_secs(3))
             .send()
             .await?

@@ -1,10 +1,12 @@
-use crate::cex;
+use crate::{cex, config};
 use log::error;
 use serde::Deserialize;
 use std::time::Duration;
+use std::sync::Arc;
 
 pub struct Kucoin {
     pub client: reqwest::Client,
+    pub config: Arc<config::Config>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -32,7 +34,7 @@ impl cex::Api for Kucoin {
     async fn get_ticker(&self) -> Result<Vec<cex::Coin>, cex::Error> {
         let body = self
             .client
-            .get("https://api.kucoin.com/api/v1/market/allTickers")
+            .get(&self.config.kucoin_url)
             .timeout(Duration::from_secs(3))
             .send()
             .await?
