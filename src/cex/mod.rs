@@ -21,7 +21,7 @@ pub struct Cex {
 }
 
 #[async_trait::async_trait]
-pub trait Api {
+pub trait Api: Send + Sync {
     async fn get_ticker(&self) -> Result<Vec<cex::Coin>, Error>;
 }
 
