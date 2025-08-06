@@ -1,8 +1,8 @@
 use crate::{cex, config};
 use log::error;
 use serde::Deserialize;
-use std::time::Duration;
 use std::sync::Arc;
+use std::time::Duration;
 
 pub struct Kucoin {
     pub client: reqwest::Client,

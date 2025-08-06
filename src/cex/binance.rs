@@ -1,13 +1,13 @@
 use crate::cex;
+use crate::config;
 use log::error;
 use serde::Deserialize;
-use std::time::Duration;
-use crate::config;
 use std::sync::Arc;
+use std::time::Duration;
 
 pub struct Binance {
     pub client: reqwest::Client,
-    pub config: Arc<config::Config>
+    pub config: Arc<config::Config>,
 }
 
 #[derive(Deserialize, Debug)]

@@ -1,4 +1,4 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -47,8 +47,12 @@ pub struct Config {
     pub min_pair_ratio: f64,
 }
 
-fn get_required_string(env_variables: &HashMap<String, String>, key: &str) -> Result<String, Error> {
-    env_variables.get(key)
+fn get_required_string(
+    env_variables: &HashMap<String, String>,
+    key: &str,
+) -> Result<String, Error> {
+    env_variables
+        .get(key)
         .cloned()
         .ok_or_else(|| Error::MissingKey(key.to_string()))
 }
@@ -64,10 +68,11 @@ pub fn read_config(path: &str) -> Result<Config, Error> {
         gate_url: get_required_string(&env_variables, "GATE_URL")?,
         kucoin_url: get_required_string(&env_variables, "KUCOIN_URL")?,
         mexc_url: get_required_string(&env_variables, "MEXC_URL")?,
-        
-        min_pair_ratio: env_variables.get("MIN_PAIR_RATIO")
+
+        min_pair_ratio: env_variables
+            .get("MIN_PAIR_RATIO")
             .ok_or_else(|| Error::MissingKey("MIN_PAIR_RATIO".to_string()))?
-            .parse::<f64>()?
+            .parse::<f64>()?,
     };
 
     Ok(config)
