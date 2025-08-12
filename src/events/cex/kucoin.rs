@@ -1,4 +1,6 @@
-use crate::{cex, config};
+use crate::config;
+use crate::events;
+use crate::events::cex;
 use log::error;
 use serde::Deserialize;
 use std::sync::Arc;
@@ -31,7 +33,7 @@ struct Response {
 
 #[async_trait::async_trait]
 impl cex::Api for Kucoin {
-    async fn get_ticker(&self) -> Result<Vec<cex::Coin>, cex::Error> {
+    async fn get_ticker(&self) -> Result<Vec<cex::Coin>, events::Error> {
         let body = self
             .client
             .get(&self.config.kucoin_url)
@@ -53,7 +55,7 @@ impl cex::Api for Kucoin {
                     Err(err) => {
                         error!("Unable to parse f64 from string: {err}");
                         0.0;
-                        return Err(cex::Error::Other(Box::new(err)));
+                        return Err(events::Error::Other(Box::new(err)));
                     }
                 },
                 quote_volume: match i
@@ -67,7 +69,7 @@ impl cex::Api for Kucoin {
                     Err(err) => {
                         error!("Unable to parse f64 from string: {err}");
                         0.0;
-                        return Err(cex::Error::Other(Box::new(err)));
+                        return Err(events::Error::Other(Box::new(err)));
                     }
                 },
             });

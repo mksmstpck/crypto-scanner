@@ -1,5 +1,6 @@
-use crate::cex;
 use crate::config;
+use crate::events;
+use crate::events::cex;
 use log::error;
 use serde::Deserialize;
 use std::sync::Arc;
@@ -20,7 +21,7 @@ pub struct Coin {
 
 #[async_trait::async_trait]
 impl cex::Api for Binance {
-    async fn get_ticker(&self) -> Result<Vec<cex::Coin>, cex::Error> {
+    async fn get_ticker(&self) -> Result<Vec<cex::Coin>, events::Error> {
         let body = self
             .client
             .get(&self.config.binance_url)
@@ -41,14 +42,14 @@ impl cex::Api for Binance {
                     Ok(val) => val,
                     Err(err) => {
                         error!("Unable to parse f64 from string: {err}");
-                        return Err(cex::Error::Other(Box::new(err)));
+                        return Err(events::Error::Other(Box::new(err)));
                     }
                 },
                 quote_volume: match i.quote_volume.parse::<f64>() {
                     Ok(val) => val,
                     Err(err) => {
                         error!("Unable to parse f64 from string: {err}");
-                        return Err(cex::Error::Other(Box::new(err)));
+                        return Err(events::Error::Other(Box::new(err)));
                     }
                 },
             });

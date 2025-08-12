@@ -1,4 +1,4 @@
-use crypto_scanner::{config, handlers, services, storage};
+use crypto_scanner::{config, events, handlers, services, storage};
 use futures::lock::Mutex;
 use log::error;
 use std::collections::HashMap;
@@ -19,11 +19,15 @@ async fn main() {
         }
     };
 
+    let client = reqwest::Client::new();
+
     let hmap: Arc<Mutex<HashMap<String, storage::Pair>>> = Arc::new(Mutex::new(HashMap::new()));
 
     let store = storage::Storage::new(Arc::clone(&hmap));
 
-    let services = services::Services::new(store, config.clone());
+    let coingecko = events::coingecko::Coingecko::new(config.clone(), client.clone());
+
+    let services = services::Services::new(store, config.clone(), coingecko, client.clone());
 
     let mut handlers = handlers::Handlers::new(config.clone(), services);
 
