@@ -45,6 +45,10 @@ pub struct Config {
     pub kucoin_url: String,
     pub mexc_url: String,
     pub min_pair_ratio: f64,
+    pub max_pair_ratio: f64,
+    pub coingecko_bulk_data: String,
+    pub coingecko_coin: String,
+    pub coingecko_base: String,
 }
 
 fn get_required_string(
@@ -68,10 +72,18 @@ pub fn read_config(path: &str) -> Result<Config, Error> {
         gate_url: get_required_string(&env_variables, "GATE_URL")?,
         kucoin_url: get_required_string(&env_variables, "KUCOIN_URL")?,
         mexc_url: get_required_string(&env_variables, "MEXC_URL")?,
+        coingecko_bulk_data: get_required_string(&env_variables, "COINGECKO_BULK_DATA")?,
+        coingecko_coin: get_required_string(&env_variables, "COINGECKO_COIN")?,
+        coingecko_base: get_required_string(&env_variables, "COINGECKO_BASE")?,
 
         min_pair_ratio: env_variables
             .get("MIN_PAIR_RATIO")
             .ok_or_else(|| Error::MissingKey("MIN_PAIR_RATIO".to_string()))?
+            .parse::<f64>()?,
+
+        max_pair_ratio: env_variables
+            .get("MAX_PAIR_RATIO")
+            .ok_or_else(|| Error::MissingKey("MAX_PAIR_RATIO".to_string()))?
             .parse::<f64>()?,
     };
 
